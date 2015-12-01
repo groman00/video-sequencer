@@ -1,0 +1,15 @@
+<head>
+  <title>video-sequencer</title>
+</head>
+
+<body>
+  <h1>Welcome to Meteor!</h1>
+    {{> videoSequencer }}
+</body>
+
+
+<template name="videoSequencer">
+    <video height="400" width="400" id="live_video" autoplay></video>
+    <button id="startRecording">Record</button>
+    <button id="stopRecording">Stop</button>
+</template>
