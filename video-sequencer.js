@@ -19,6 +19,29 @@ if (Meteor.isClient) {
         frameTime,
         imageArray;
 
+    var BinaryFileReader = {
+        read: function (file, callback) {
+            var reader = new FileReader;
+
+            var fileInfo = {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                file: null
+            }
+
+            reader.onload = function () {
+                fileInfo.file = new Uint8Array(reader.result);
+                callback(null, fileInfo);
+            }
+            reader.onerror = function () {
+                callback(reader.error);
+            }
+
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
     function setupMedia() {
 
         audioContext = new AudioContext();
@@ -126,11 +149,69 @@ if (Meteor.isClient) {
         }
     }
 
-    function completeRecording() {
+    /*function completeRecording() {
         // stop & export the recorder audio
         audioRecorder.stop();
         mediaStream.stop();
+    }*/
+
+    function completeRecording() {
+        // stop & export the recorder audio
+        audioRecorder.stop();
+
+        //var user = Meteor.user();
+        // if (!user) {
+        //     // must be the logged in user
+        //     console.log("completeRecording - NO USER LOGGED IN");
+        //     return;
+        // }
+        // console.log("completeRecording: " + user._id);
+
+        //document.getElementById('uploading').hidden = false;
+        
+        //using a fake user for now
+        var user = {
+            _id: 'abc123'
+        };
+
+        audioRecorder.exportWAV(function (audioBlob) {
+            // save to the db
+            BinaryFileReader.read(audioBlob, function (err, fileInfo) {
+                UserAudios.insert({
+                    userId: user._id,
+                    audio: fileInfo,
+                    save_date: Date.now()
+                });
+            });
+            console.log("Audio uploaded");
+        });
+
+        // do the video encoding
+        // note: tried doing this in real-time as the frames were requested but
+        // the result didn't handle durations correctly.
+        var whammyEncoder = new Whammy.Video();
+        for (i in imageArray) {
+            videoContext.putImageData(imageArray[i].image, 0, 0);
+            whammyEncoder.add(videoContext, imageArray[i].duration);
+            delete imageArray[i];
+        }
+        var videoBlob = whammyEncoder.compile();
+
+        BinaryFileReader.read(videoBlob, function (err, fileInfo) {
+            UserVideos.insert({
+                userId: user._id,
+                video: fileInfo,
+                save_date: Date.now()
+            });
+        });
+
+        console.log("Video uploaded");
+
+        // stop the stream & redirect to show the video
+        mediaStream.stop();
+        Router.go('showVideo', { _id: user._id });
     }
+
 
     Template.videoSequencer.events({
         'click #startRecording': function(){
@@ -140,6 +221,40 @@ if (Meteor.isClient) {
             stopRecording();
         }        
     });
+
+
+    Template.showVideo.helpers({
+        userVideo: function () {
+            
+            console.log(this, arguments);
+
+            if (!this.video) {
+                return "";
+            }
+
+            var blob = new Blob([this.video.video.file], {type: this.video.video.type});
+            
+            return window.URL.createObjectURL(blob);
+        },
+
+        userAudio: function () {
+
+            if (!this.audio) {
+                return "";
+            }
+
+            var blob = new Blob([this.audio.audio.file], {type: this.audio.audio.type});
+            return window.URL.createObjectURL(blob);
+        }
+    });
+
+    Template.showVideo.events = {
+        'click #playRecording': function (e) {
+            
+            document.getElementById("review_video").play();
+            document.getElementById("review_audio").play();
+        }
+    };
 
     //console.log(Template.record)
     Template.videoSequencer.onRendered(function() {
