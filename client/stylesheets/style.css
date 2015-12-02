@@ -1,0 +1,93 @@
+.icon{
+    display:inline-block;
+    line-height:1;
+}
+
+.sequencer{
+    height:800px;
+    width:800px;
+}
+
+.sequencer .cell{
+    position:relative;
+    float:left;
+    background-color:rgba(0, 0, 0, .15);
+    border:solid 10px white;
+}
+
+.two-col .cell{
+    height:50%;
+    width:50%;
+}
+
+.three-col .cell{
+    height:33.333333%;
+    width:33.333333%;
+}
+
+.four-col .cell{
+    height:25%;
+    width:25%;
+}
+
+.add{
+    display:block;
+    height:100%;
+    width:100%;
+    text-decoration:none;
+    transition:background-color 300ms ease-in-out;
+}
+
+.add .icon{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    font-size: 65px;
+    transform: translate3d(-50%, -50%, 0)  scale(.75);
+    transition:all 300ms ease-in-out;
+}
+
+.add:hover{
+    background-color:rgba(0, 0, 0, .2);
+}
+
+.add:hover .icon{
+    color:green;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+}
+
+.cell .camera{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    display:none;
+}
+
+.cell .camera .controls{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.cell.isRecording .camera{
+    display:block;
+}
+
+.cell.isRecording .add{
+    display:none;
+}
+
+
+
+
+
+
+
+
+
+
+

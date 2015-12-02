@@ -2,17 +2,3 @@
   <title>video-sequencer</title>
 </head>
 <body></body>
-
-
-<template name="videoSequencer">
-    <video height="400" width="400" id="live_video" autoplay></video>
-    <button id="startRecording">Record</button>
-    <button id="stopRecording">Stop</button>
-</template>
-
-
-<template name="showVideo">
-    <video id="review_video" width="400" height="400" src="{{userVideo}}"></video>
-    <audio hidden="true" id="review_audio" src="{{userAudio}}"></audio>
-    <button id="playRecording">Play</button>
-</template>

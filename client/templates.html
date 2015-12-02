@@ -1,0 +1,26 @@
+<template name="videoSequencer">
+    <h1>Video Sequencer</h1>
+    <div id="sequencer" class="sequencer four-col">
+        <!-- <div class="cell"></div> -->
+        {{> newCell}}
+    </div>
+</template>
+
+<template name="showVideo">
+    <video id="review_video" width="400" height="400" src="{{userVideo}}"></video>
+    <audio hidden="true" id="review_audio" src="{{userAudio}}"></audio>
+    <button id="playRecording">Play</button>
+</template>
+
+<template name="newCell">
+    <div class="cell">
+        <a href="#" class="add"><i class="icon">+</i></a>    
+        <div class="camera">
+            <video height="100%" width="100%" id="live_video" autoplay></video>
+            <div class="controls">
+                <button id="startRecording">Record</button>
+                <button id="stopRecording">Stop</button>
+            </div>
+        </div>
+    </div>
+</template>

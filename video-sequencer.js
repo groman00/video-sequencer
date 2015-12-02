@@ -41,7 +41,7 @@ if (Meteor.isClient) {
             reader.readAsArrayBuffer(file);
         }
     }
-
+/*
     function setupMedia() {
 
         audioContext = new AudioContext();
@@ -85,8 +85,8 @@ if (Meteor.isClient) {
         );
 
     };
-
-    function startRecording() {
+*/
+/*    function startRecording() {
         console.log("Begin Recording");
      
         videoCanvas.width = videoElement.width;
@@ -102,14 +102,14 @@ if (Meteor.isClient) {
      
         // begin recording audio
         audioRecorder.record();
-    }
+    }*/
 
-    function stopRecording() {
-        console.log("End Recording");
-        recording = false;
-    }
+    // function stopRecording() {
+    //     console.log("End Recording");
+    //     recording = false;
+    // }
 
-    function recordFrame() {     
+   /* function recordFrame() {     
         if (recording) {
 
             var image;
@@ -147,14 +147,8 @@ if (Meteor.isClient) {
         else {
             completeRecording();
         }
-    }
-
-    /*function completeRecording() {
-        // stop & export the recorder audio
-        audioRecorder.stop();
-        mediaStream.stop();
     }*/
-
+/*
     function completeRecording() {
         // stop & export the recorder audio
         audioRecorder.stop();
@@ -210,9 +204,9 @@ if (Meteor.isClient) {
         // stop the stream & redirect to show the video
         mediaStream.stop();
         Router.go('showVideo', { _id: user._id });
-    }
+    }*/
 
-
+/*
     Template.videoSequencer.events({
         'click #startRecording': function(){
             startRecording();
@@ -221,7 +215,7 @@ if (Meteor.isClient) {
             stopRecording();
         }        
     });
-
+*/
 
     Template.showVideo.helpers({
         userVideo: function () {
@@ -259,7 +253,7 @@ if (Meteor.isClient) {
     //console.log(Template.record)
     Template.videoSequencer.onRendered(function() {
         //console.log('foooo')
-        setupMedia(); 
+        //setupMedia(); 
     });
 
 }
