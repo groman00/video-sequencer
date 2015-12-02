@@ -8,7 +8,7 @@ if (Meteor.isClient) {
         navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
 
 
-    var videoElement,
+/*    var videoElement,
         audioContext, 
         audioRecorder, 
         mediaStream, 
@@ -40,7 +40,7 @@ if (Meteor.isClient) {
 
             reader.readAsArrayBuffer(file);
         }
-    }
+    }*/
 /*
     function setupMedia() {
 
@@ -217,7 +217,7 @@ if (Meteor.isClient) {
     });
 */
 
-    Template.showVideo.helpers({
+/*    Template.showVideo.helpers({
         userVideo: function () {
             
             console.log(this, arguments);
@@ -240,21 +240,20 @@ if (Meteor.isClient) {
             var blob = new Blob([this.audio.audio.file], {type: this.audio.audio.type});
             return window.URL.createObjectURL(blob);
         }
-    });
+    });*/
 
-    Template.showVideo.events = {
+/*    Template.showVideo.events = {
         'click #playRecording': function (e) {
-            
             document.getElementById("review_video").play();
             document.getElementById("review_audio").play();
         }
-    };
+    };*/
 
     //console.log(Template.record)
-    Template.videoSequencer.onRendered(function() {
+    //Template.videoSequencer.onRendered(function() {
         //console.log('foooo')
         //setupMedia(); 
-    });
+    //});
 
 }
 

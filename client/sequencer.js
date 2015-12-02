@@ -1,13 +1,21 @@
 (function(){
 
+    /*
+     * ideas for syncing:  
+     * - http://stackoverflow.com/questions/21016656/html5-javascript-audio-play-multiple-tracks-at-the-same-time
+     * - https://bocoup.com/weblog/html5-video-synchronizing-playback-of-two-videos
+     */
+
     function Sequencer(){
 
-        this.$el = $('#sequencer')
-            .on('videoAdded', this.videoAdded.bind(this));
+        this.id = '#sequencer';
         this.cellClass = '.cell';
-        this.cells = this.$el.find(this.cellClass);
+        //this.cells = this.$el.find(this.cellClass);
         this.recordingClass = 'isRecording';
         this.isMediaSetup = false;
+
+        //hardcoded user
+        this.user = {_id: 'abc123'};
 
         this.$videoElement;
         this.audioContext;
@@ -20,24 +28,108 @@
         this.frameTime;
         this.imageArray;
 
+        this.BinaryFileReader = {
+            read: function (file, callback) {
+                var reader = new FileReader;
+
+                var fileInfo = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    file: null
+                }
+
+                reader.onload = function () {
+                    fileInfo.file = new Uint8Array(reader.result);
+                    callback(null, fileInfo);
+                }
+                reader.onerror = function () {
+                    callback(reader.error);
+                }
+
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
         Template.newCell.events = {
             'click .add': this.startNewVideo.bind(this),
             'click #startRecording': this.startRecording.bind(this),
             'click #stopRecording': this.stopRecording.bind(this)                    
         };
+
+        Template.videoSequencer.helpers({
+            videos: function(){
+                
+                var id = this.user._id;
+                var videos = UserVideos.find({ userId: id }, { sort: { save_date: -1 }}).fetch();
+                var audios = UserAudios.find({ userId: id }, { sort: { save_date: -1 }}).fetch();
+                var data = [];
+
+                for(var i = 0, max = videos.length; i < max; i++){
+                    data.push({
+                        audio: audios[i],
+                        video: videos[i]
+                    });
+                }
+
+                console.log(data);
+
+                return data;
+
+            }.bind(this)
+        });
+
+        Template.videoSequencer.events = {
+            'click .play': this.playAll.bind(this),
+            'click .stop': this.stopAll.bind(this)           
+        };
+
+        Template.video.helpers({
+            userVideo: function () {
+                if (!this.video) {
+                    return "";
+                }
+                var blob = new Blob([this.video.video.file], {type: this.video.video.type});
+                return window.URL.createObjectURL(blob);
+            },
+
+            userAudio: function () {
+                if (!this.audio) {
+                    return "";
+                }
+                var blob = new Blob([this.audio.audio.file], {type: this.audio.audio.type});
+                return window.URL.createObjectURL(blob);
+            }
+        });        
      
     };
 
+    /**/
+    Sequencer.prototype.playAll = function() {
+        $(this.id).find('.video').each(function(i, item){
+            $(item).children('video')[0].play();
+            $(item).children('audio')[0].play();
+        });
+    };
 
     /**/
-    Sequencer.prototype.videoAdded = function(e) {
-
-
-        
-
-        //reset values
-
+    Sequencer.prototype.stopAll = function() {
+        $(this.id).find('.video').each(function(i, item){
+            var video = $(item).children('video')[0]
+            var audio = $(item).children('audio')[0]
+            video.pause();
+            audio.pause();
+            audio.currentTime = 0;
+            video.currentTime = 0;
+        });
     };
+
+    /**/
+    Sequencer.prototype.resetCamera = function() {
+        this.$videoElement[0].src = "";
+        $(this.id).find('.isRecording').removeClass('isRecording');
+    };
+
 
 
     /**/
@@ -55,7 +147,9 @@
                     //'webkit': {
                         mandatory: {
                             maxHeight: dimension,
-                            maxWidth: dimension 
+                            maxWidth: dimension,
+                            minHeight: dimension,
+                            minWidth: dimension 
                         }                
                     // },
                     // 'default': {
@@ -110,7 +204,9 @@
     Sequencer.prototype.startRecording = function(e) {
         
         console.log("Begin Recording");
-     
+        
+        this.stopAll();     
+
         var videoElement = this.$videoElement[0];
 
         this.videoCanvas.width = videoElement.width;
@@ -126,7 +222,10 @@
         requestAnimationFrame(this.recordFrame.bind(this));
      
         // begin recording audio
-        this.audioRecorder.record();        
+        this.audioRecorder.record(); 
+
+        this.playAll();
+
     };
 
     Sequencer.prototype.recordFrame = function() {     
@@ -173,6 +272,7 @@
     Sequencer.prototype.stopRecording = function() {
         console.log("End Recording");
         this.recording = false;
+        this.stopAll();
     };
 
 
@@ -191,51 +291,46 @@
         //document.getElementById('uploading').hidden = false;
         
         //using a fake user for now
-        /*var user = {
-            _id: 'abc123'
-        };
 
-        audioRecorder.exportWAV(function (audioBlob) {
+
+        this.audioRecorder.exportWAV(function (audioBlob) {
             // save to the db
-            BinaryFileReader.read(audioBlob, function (err, fileInfo) {
+            this.BinaryFileReader.read(audioBlob, function (err, fileInfo) {
                 UserAudios.insert({
-                    userId: user._id,
+                    userId: this.user._id,
                     audio: fileInfo,
                     save_date: Date.now()
                 });
-            });
+            }.bind(this));
             console.log("Audio uploaded");
-        });
+        }.bind(this));
 
         // do the video encoding
         // note: tried doing this in real-time as the frames were requested but
         // the result didn't handle durations correctly.
         var whammyEncoder = new Whammy.Video();
-        for (i in imageArray) {
-            videoContext.putImageData(imageArray[i].image, 0, 0);
-            whammyEncoder.add(videoContext, imageArray[i].duration);
-            delete imageArray[i];
+        for (i in this.imageArray) {
+            this.videoContext.putImageData(this.imageArray[i].image, 0, 0);
+            whammyEncoder.add(this.videoContext, this.imageArray[i].duration);
+            delete this.imageArray[i];
         }
         var videoBlob = whammyEncoder.compile();
 
-        BinaryFileReader.read(videoBlob, function (err, fileInfo) {
+        this.BinaryFileReader.read(videoBlob, function (err, fileInfo) {
             UserVideos.insert({
-                userId: user._id,
+                userId: this.user._id,
                 video: fileInfo,
                 save_date: Date.now()
             });
-        });*/
+        }.bind(this));
 
         console.log("Video uploaded");
 
         // stop the stream & redirect to show the video
         //todo: use mediaStreamTrack
-
         this.mediaStream.stop();
 
-        this.$el.trigger('videoAdded');
-        //Router.go('showVideo', { _id: user._id });
-
+        this.resetCamera();
     }
 
     var sequencer = new Sequencer();

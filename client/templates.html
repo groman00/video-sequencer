@@ -1,7 +1,13 @@
 <template name="videoSequencer">
     <h1>Video Sequencer</h1>
-    <div id="sequencer" class="sequencer four-col">
-        <!-- <div class="cell"></div> -->
+    <div style="padding:20px 0;">
+        <button class="play">Play</button>
+        <button class="stop">Stop</button>
+    </div>
+    <div id="sequencer" class="sequencer two-col">
+        {{#each videos}}
+            {{> video}}
+        {{/each}}
         {{> newCell}}
     </div>
 </template>
@@ -10,6 +16,13 @@
     <video id="review_video" width="400" height="400" src="{{userVideo}}"></video>
     <audio hidden="true" id="review_audio" src="{{userAudio}}"></audio>
     <button id="playRecording">Play</button>
+</template>
+
+<template name="video">
+    <div class="cell video">
+        <video height="100%" width="100%" src="{{userVideo}}"></video>
+        <audio hidden="true" src="{{userAudio}}"></audio>
+    </div>    
 </template>
 
 <template name="newCell">
